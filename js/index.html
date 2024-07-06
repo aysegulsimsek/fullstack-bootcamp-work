@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css" />
+    <title>Movies</title>
+
+    <style>
+        body {
+            padding: 20px;
+        }
+        
+        #movieList,
+        #watchedList {
+            margin-top: 20px;
+        }
+        
+        .movie-image {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .star-rating {
+            display: flex;
+            justify-content: center;
+        }
+        
+        .star {
+            font-size: 2rem;
+            color: gray;
+            cursor: pointer;
+            margin: 0 5px;
+        }
+        
+        .star-rating i {
+            color: #e6e6e6;
+            font-size: 25px;
+            cursor: pointer;
+        }
+        
+        .star-rating i.active {
+            color: gold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1 class="mb-4">Film Arşivi</h1>
+
+        <div class="mb-3">
+            <label for="movieName" class="form-label">Film Adı:</label>
+            <input type="text" class="form-control" id="movieName">
+        </div>
+        <div class="mb-3">
+            <label for="imageUrl" class="form-label">Film URL:</label>
+            <input type="text" class="form-control" id="imageUrl">
+        </div>
+
+        <button class="btn btn-success" onclick="addMovie()">Filmi Ekle</button>
+
+        <h2 class="mt-4">İzlenecek Filmler</h2>
+        <div id="movieList">
+
+        </div>
+
+        <h2 class="mt-4">İzlenenen Filmler</h2>
+        <div id="watchedList">
+
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function addMovie() {
+
+            var movieName = document.getElementById('movieName').value;
+            var imageUrl = document.getElementById('imageUrl').value;
+
+            if (movieName.trim() === '' || imageUrl.trim() === '') {
+                alert('Lütfen film adı ve resim URL\si girin.');
+                return;
+            }
+
+            var movieList = document.getElementById('movieList');
+            var listItem = document.createElement('div');
+            listItem.className = 'd-flex justify-content-between align-items-center border-bottom mb-2';
+
+            var movieContent = document.createElement('div');
+            movieContent.className = 'd-flex align-items-center';
+
+            var movieImage = document.createElement('img');
+            movieImage.src = imageUrl;
+            movieImage.alt = movieName;
+            movieImage.className = 'movie-image me-2';
+
+            var movieTitle = document.createElement('span');
+            movieTitle.textContent = movieName;
+
+            movieContent.appendChild(movieImage);
+            movieContent.appendChild(movieTitle);
+
+            var buttons = document.createElement('div');
+            buttons.innerHTML =
+                `<button class= "btn btn-success me-2" 
+            onclick="watchMovie(this)">İzlendi</button>
+            <button class= "btn btn-danger me-2" onclick="removeMovie(this)">Kaldır</button>
+            `;
+
+            listItem.appendChild(movieContent);
+            listItem.appendChild(buttons);
+
+            movieList.appendChild(listItem);
+
+            document.getElementById('movieName').value = '';
+            document.getElementById('imageUrl').value = '';
+        }
+
+        function watchMovie(button) {
+
+            var listItem = button.parentNode.parentNode;
+
+            var watchedList = document.getElementById('watchedList');
+
+            var emotion = prompt('Filmle alakalı görüşlerinizi yazınız:');
+
+
+            //filmi puanlarken valid bir değer girilmediğinde loop kullanarak valid değer girilene kadar prompt açarız
+            var validRating = false;
+            var rating;
+
+            while (!validRating) {
+                rating = prompt('Filmi puanlayın (1-5 arası bir değer girin):');
+
+                if (rating === null) {
+                    return;
+                }
+
+                rating = parseInt(rating);
+
+                if (rating >= 1 && rating <= 5) {
+                    validRating = true;
+                } else {
+                    alert('Lütfen geçerli bir puan girin (1-5 arası).');
+                }
+            }
+
+            //filmi puanlamak için 
+            if (rating !== null && rating >= 1 && rating <= 5) {
+                //girilen string ifade numbera çevrilir
+                rating = parseInt(rating);
+
+                var movieContent = listItem.querySelector('.d-flex .align-items-center');
+
+                var movieImage = movieContent.querySelector('.movie-image');
+
+                var smallImage = movieImage.cloneNode();
+                smallImage.className = 'movie-image me-2';
+                var starRating = createStarRating(rating);
+
+                listItem.innerHTML = '';
+                listItem.appendChild(movieContent);
+
+                listItem.innerHTML += `<span>${emotion}</span>`;
+                //starRating divini append ederiz
+                listItem.appendChild(starRating);
+
+                watchedList.appendChild(listItem);
+
+                button.parentNode.innerHTML = '<span class="text-success">İzlendi</span>'
+            } else {
+                alert('Lütfen geçerli bir puan girin (1-5).');
+            }
+        }
+
+        function removeMovie(button) {
+            var listItem = button.parentNode.parentNode;
+            listItem.remove();
+        }
+        //Rating functionu createliyoruz
+        function createStarRating(rating) {
+            //div oluşturduk
+            var starRating = document.createElement('div');
+            //class atadık
+            starRating.className = 'star-rating';
+            //for döngüsüyle 5 tane star oluşturuyoruz
+            for (let i = 1; i <= 5; i++) {
+                var star = document.createElement('i');
+                star.className = 'fa-solid fa-star';
+                //girilen rating değerinden küçük ve eşit olanlara active sınıfı atıyoruz
+                if (i <= rating) {
+                    star.classList.add('active');
+                }
+                //her bir star öğresini starRating divine appendliyoruz
+                starRating.appendChild(star);
+            }
+
+            return starRating;
+
+        }
+        //click olayıyla active sınıfını ekleyip kaldırıyoruz
+        document.addEventListener('DOMContentLoaded', () => {
+            const stars = document.querySelectorAll(".star-rating i");
+
+            //index1 star ögelerinin index numarasını temsil eder
+            stars.forEach((star, index1) => {
+                //bu star tıklandığında aşağıdaki kod tetiklenir
+                star.addEventListener("click", () => {
+                    //index2 iç içe döngünün içindeki yıldızın index değerini temsil eder
+                    stars.forEach((star, index2) => {
+                        //iç içe döngünün içindeki starın index değeri dıştaki döngünün index değerinden büyük veya eşitse yıldıza active classı atanır 
+                        index1 >= index2 ?
+                            star.classList.add("active") :
+                            star.classList.remove("active");
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
